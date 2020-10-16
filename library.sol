@@ -31,12 +31,20 @@ library Library {
 //用户登陆函数
  function Userlogin(user_info storage self,bytes32 _user_secrctkey) public returns(string){
      if(self.user_identify[_user_secrctkey])
-     return "Welcome login";
+     return "Welcome user login";
  }
-     //管理员注册函数
-  function RegisterAdmin(string _admin_name,uint _adminpassword)public view returns(bytes32 _admin_secretkey){
-      _admin_secretkey=sha256(abi.encode(_admin_name,msg.sender));
+     //传入自身（便于外部函数调用） 管理员注册函数
+  function RegisterAdmin(admin_info storage self,string _admin_name,uint _adminpassword,address _adminaddress,uint time)public view returns(bytes32 _admin_secretkey){
+      time=block.timestamp;
+      _admin_secretkey=sha256(abi.encode(_admin_name,_adminpassword,msg.sender,block.timestamp));
+      self.admin_identify[_admin_secretkey]=true;
+      return(_admin_secretkey);
   }
+//管理员登陆
+ function Adminlogin(admin_info storage self,bytes32 _adminsecrctkey) public returns(string){
+     if(self.admin_identify[_adminsecrctkey])
+     return "Welcome admin login";
+ }
   // //计算该系统进行XX操作需要的权限值
     function Power(uint[]power,uint num) public pure returns(uint purview){
               for(uint i=0;i<num;i++){
