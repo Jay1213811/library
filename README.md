@@ -31,6 +31,8 @@ Using library for *
 **2.获取管理员做XX操作所需权限值：`Powe(uint[] power,uint num) returns(uint)`** 
 传入参数为用户的操作码，操作码用数组保存，还要传入数组的长度num，返回一个uint类型的值即所需权限值。比如我们设定看用户名字为1，看电话号码为2，看信用卡积分为3.我们希望对方只能查看我们电话号码和名字即传入一个数组uint power=[1,2] num=2。然后会通过权限分配算法返回一个需要分配的权限值。
 调用时只需要调用`Library.Power(power,num)`
+
+
 **3.校验用户是否有进行XX操作的权限`IdentifyPermission（uint,uint) returns(bool)`**
 传入两个参数，一个是用户拥有的权限值，一个是做xx操作需要的权限。通过与运算如果own&2**need==2**need 则证明拥有这个权限返回true 否则返回false。
 调用时只需要`Library.IdentifyPermission(uint,uint)`
