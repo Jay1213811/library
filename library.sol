@@ -7,7 +7,6 @@ library Library {
         string user_name;//用户名
         uint user_password;//用户密码 后面其他项目调用时这里可以填某些不允许篡改的值，比如居民身份证号/证书编号等
         address user_address;//注册用户地址
-        uint user_points;//信用积分
         uint time;//timestamp   时间戳自动生成，防止伪造
         mapping(bytes32 => bool) user_identify;//用户是否注册 这里设置这样的一个bool值的好处就是删除用户直接把这个设置为false即可，查看用户是否存在也只需要get这个值即可
     }
@@ -29,21 +28,24 @@ library Library {
          return (_user_secrctkey);
      }
 //用户登陆函数
- function Userlogin(user_info storage self,bytes32 _user_secrctkey) public returns(string){
+ function IdentifyUser(user_info storage self,bytes32 _user_secrctkey) public view returns(bool){
      if(self.user_identify[_user_secrctkey])
-     return "Welcome user login";
+     return true;
+     else
+     return false;
  }
      //传入自身（便于外部函数调用） 管理员注册函数
-  function RegisterAdmin(admin_info storage self,string _admin_name,uint _adminpassword,address _adminaddress,uint time)public view returns(bytes32 _admin_secretkey){
+  function RegisterAdmin(admin_info storage self,string _admin_name,uint _adminpassword,address _adminaddress,uint time)public returns(bytes32 _admin_secretkey){
       time=block.timestamp;
       _admin_secretkey=sha256(abi.encode(_admin_name,_adminpassword,msg.sender,block.timestamp));
       self.admin_identify[_admin_secretkey]=true;
+      self.admin_purview[_adminaddress]=0;
       return(_admin_secretkey);
   }
 //管理员登陆
- function Adminlogin(admin_info storage self,bytes32 _adminsecrctkey) public returns(string){
+ function IdentifyAdmin(admin_info storage self,bytes32 _adminsecrctkey) public view returns(bool){
      if(self.admin_identify[_adminsecrctkey])
-     return "Welcome admin login";
+     return true;
  }
   // //计算该系统进行XX操作需要的权限值
     function Power(uint[]power,uint num) public pure returns(uint purview){
@@ -59,7 +61,7 @@ library Library {
         self.admin_purview[_AdminAddress] = value;
         return true;
     }
-    //查看XX拥有的权限值，返回该值
+    //查看XX管理 拥有的权限值，返回该值
    function ViewPermission(admin_info storage self, address _AdminAddress) public view returns (uint) {
         return self.admin_purview[_AdminAddress];
     }
