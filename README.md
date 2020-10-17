@@ -44,16 +44,16 @@ Library.RegisterUser(_userData,string,uint,uint)；多传一个参数即它自�
 RegisterUser(slef,string,uint,adddress,uint)public  returns(bytes32 )
 与用户注册一样。唯一的区别是，管理员注册的时候还会将结构体中该管理地址映射的权限值赋一个初值0；
 
- 3. 用户登陆Userlogin(self,bytes32)returns(string)
+ 3. 用户登陆IdentifyUser(self,bytes32)returns(bool)
 
 通过self调用user结构体中该密钥对应的注册状态为真
-返回欢迎用户登陆的字符串
+返回true
 
 
-4.管理员登陆
-Adminlogin（self，bytes32）returns（string）
+4.管理员登陆IdentifyAdmin(self,bytes32)returns(bool)
+
 通过self调用admin结构体中该密钥对应的注册状态为真
-返回欢迎用户登陆的字符串
+返回true
 
 5.计算进行xx操作需要的权限值
 Power(uint[],uint num)returns(uint)
