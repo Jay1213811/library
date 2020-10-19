@@ -95,6 +95,9 @@ contract SharedBike{
     //管理员功能：给予不规范停车的扣分， ，通过这部车的地址去找到租这部车的人的地址，再通过租车人的地址去扣分
     function Punishment(bytes32 _usersecretkey,uint _bikeid)public returns(bool){
         address addressuser=user_dic[_usersecretkey].find_bike[_bikeid];
+         if(addressuser!=user_dic[_usersecretkey].useraddress){
+           revert("user error");
+       }
         user_dic[_usersecretkey].bike_points[addressuser]-=10;
         return true;
     }
