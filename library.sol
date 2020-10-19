@@ -22,7 +22,7 @@ library Library {
     uint time;//timestamp   时间戳自动生成，防止伪造
     mapping(bytes32 => bool) admin_identify;
     }
-     //在很多函数中都需要用到映射，在库中写好可以直接调用，而不用在evm中在copy一份
+
     struct mappingcontrol_info
     {
         mapping(address=>uint)addressTouint;
@@ -30,14 +30,25 @@ library Library {
         mapping(uint => string)uintTostring;
         mapping(string => uint)stringTouint;
         mapping(uint => uint)uintTouint;
+        mapping(bytes32 => bool)byteTobool;
+        mapping(uint => bytes32)uintTobytes;
     }
+    //log
+    event registeruesr(string _username,address _useraddress,uint time);
+    event registerAdmin(string _admin_name,address _adminaddress,uint time);
+    event logpower(uint[] power,uint num);
+    event logAuthorization(address _adminaddress,uint _value);
+    event logViewPermission(address,uint);
+    event logIdentifyPermission(uint,uint,bool);
 //用户注册函数:1用户注册的时候拿用户名，注册地址，密码，时间戳时间去做一个sha256处理，得到一个哈希值，用这个值做登陆凭证
   function RegisterUser(user_info storage self,string memory _username,uint _userpassword,address _useraddress,uint time)public  returns(bytes32 _user_secrctkey){
       time=block.timestamp;
       _useraddress=msg.sender;
       _user_secrctkey = sha256(abi.encode(_username,_userpassword,_useraddress,block.timestamp));
+      
       self.user_identify[_user_secrctkey]=true;//将该密钥对应的注册状态改为true
       return (_user_secrctkey);
+      emit registeruesr(_username,_useraddress,time);
      }
 //用户登陆函数
  function IdentifyUser(user_info storage self,bytes32 _user_secrctkey) public view returns(bool){
@@ -52,6 +63,7 @@ library Library {
       _admin_secretkey=sha256(abi.encode(_admin_name,_adminpassword,msg.sender,block.timestamp));
       self.admin_identify[_admin_secretkey]=true;
       self.admin_purview[_adminaddress]=0;
+      emit registerAdmin(_admin_name,_adminaddress,time);
       return(_admin_secretkey);
   }
 //管理员登陆
@@ -60,11 +72,12 @@ library Library {
      return true;
  }
   // //计算该系统进行XX操作需要的权限值
-    function Power(uint[]power,uint num) public pure returns(uint purview){
+    function Power(uint[]power,uint num) public  returns(uint purview){
               for(uint i=0;i<num;i++){
              purview=purview+2**power[i];
          }
         return purview;//用户的权限值
+       emit logpower(power,num);
      }
   //授予权限函数：传入自身（便于外部函数调用） 映射的内容，管理员的地址，传入授予的权限值
    function Authorization(admin_info storage self,address _AdminAddress,uint value) public  returns (bool)
@@ -72,20 +85,24 @@ library Library {
         require(value > 0);
         self.admin_purview[_AdminAddress] = value;
         return true;
+        emit logAuthorization(_AdminAddress,value);
     }
     //查看XX管理 拥有的权限值，返回该值
-   function ViewPermission(admin_info storage self, address _AdminAddress) public view returns (uint) {
+   function ViewPermission(admin_info storage self, address _AdminAddress) public returns (uint) {
         return self.admin_purview[_AdminAddress];
+        emit logViewPermission(_AdminAddress,self.admin_purview[_AdminAddress]);
     }
     //权限验证
-    function IdentifyPermission(uint _own,uint _need) public pure returns(bool){
+    function IdentifyPermission(uint _own,uint _need) public  returns(bool key){
         if((_own&2**_need)==2**_need)
         {
-            return true;
+            key=true;
+            return key;
         }
         else{
-            return false;
+            key=false;
+            return key;
         }
+        emit logIdentifyPermission(_own,_need,key);
     }
 }
-
