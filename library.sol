@@ -9,23 +9,35 @@ library Library {
         address user_address;//注册用户地址
         uint time;//timestamp   时间戳自动生成，防止伪造
         mapping(bytes32 => bool) user_identify;//用户是否注册 这里设置这样的一个bool值的好处就是删除用户直接把这个设置为false即可，查看用户是否存在也只需要get这个值即可
+    
+                                                                             
     }
      struct admin_info
-{
-
+    {
+    
     string admin_name;//管理名，也可以理解为管理部门部门名
     uint admin_password;//管理员密码
     address admin_address;//管理员地址
     mapping(address => uint)admin_purview;//这里设置这样一个mapping的意义在于，后面我们通过管理员的地址去get他的权限。便于后续做权限分配以及按需公开数据
     uint time;//timestamp   时间戳自动生成，防止伪造
     mapping(bytes32 => bool) admin_identify;
-}
+    }
+     //在很多函数中都需要用到映射，在库中写好可以直接调用，而不用在evm中在copy一份
+    struct mappingcontrol_info
+    {
+        mapping(address=>uint)addressTouint;
+        mapping(uint => bool) uintTobool;
+        mapping(uint => string)uintTostring;
+        mapping(string => uint)stringTouint;
+        mapping(uint => uint)uintTouint;
+    }
 //用户注册函数:1用户注册的时候拿用户名，注册地址，密码，时间戳时间去做一个sha256处理，得到一个哈希值，用这个值做登陆凭证
   function RegisterUser(user_info storage self,string memory _username,uint _userpassword,address _useraddress,uint time)public  returns(bytes32 _user_secrctkey){
       time=block.timestamp;
-      _user_secrctkey = sha256(abi.encode(_username,_userpassword,msg.sender,block.timestamp));
-         self.user_identify[_user_secrctkey]=true;//将该密钥对应的注册状态改为true
-         return (_user_secrctkey);
+      _useraddress=msg.sender;
+      _user_secrctkey = sha256(abi.encode(_username,_userpassword,_useraddress,block.timestamp));
+      self.user_identify[_user_secrctkey]=true;//将该密钥对应的注册状态改为true
+      return (_user_secrctkey);
      }
 //用户登陆函数
  function IdentifyUser(user_info storage self,bytes32 _user_secrctkey) public view returns(bool){
@@ -76,3 +88,4 @@ library Library {
         }
     }
 }
+
