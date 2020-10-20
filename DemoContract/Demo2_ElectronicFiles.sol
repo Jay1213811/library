@@ -33,8 +33,9 @@ contract ElectronicFiles{
        return(admin_secretkey);
     }
     //用户注册
-   function RegisterUser(string name,uint password,address owner)public returns(bytes32){
-       return Library.RegisterUser(_userdata,name,password,owner,block.timestamp);
+   function RegisterUser(string name,uint password,address owner)public returns(bytes32 user_secretkey){
+       user_secretkey=Library.RegisterUser(_userdata,name,password,owner,block.timestamp);
+        return user_secretkey;
        
    }
    //生成电子证书。首先要判断操作的是管理员，只有管理有权去授权电子证书
@@ -45,10 +46,17 @@ contract ElectronicFiles{
         ElectronicFile_dic[ElectronicFile_Secretkey]=ElectronicFiles_info(true,_filename,_CertificateNumber,_Issuer,_timestamp,_owner);
         return (ElectronicFile_Secretkey);
     }
-  //检查电子证书合法性和有效性函数，双重保护1.首先要判断目前拿这个证书的人的地址是否为电子证书拥有者的地址，2.该密钥对应的电子证书已经授权获得了验证。返回为true则用人单位默认这个证书是真实的
-function check(bytes32 ElectronicFile_Secretkey)public returns(bool){
-    require(ElectronicFile_dic[ElectronicFile_Secretkey].owner==msg.sender,"user is not owner");
-    return(Library.IdentifyUser(_userdata,ElectronicFile_Secretkey));
+//检查电子证书合法性和有效性函数，双重保护1.首先要判断目前拿这个证书的人的地址是否为电子证书拥有者的地址，
+//2.该密钥对应的信息再进行一次sha256运算结果一致说明信息没有被篡改。返回为true则用人单位默认这个证书是真实的
+function check(bytes32 ElectronicFile_Secretkey)public returns(string){
+    if(sha256(abi.encode(ElectronicFile_dic[ElectronicFile_Secretkey].filename,ElectronicFile_dic[ElectronicFile_Secretkey].CertificateNumber,msg.sender,ElectronicFile_dic[ElectronicFile_Secretkey].timestamp))==ElectronicFile_Secretkey){
+        return("证件属实！");
+    }
+    else{
+        return("证件有被修改");
+    }
+
     
 }
+
 }
