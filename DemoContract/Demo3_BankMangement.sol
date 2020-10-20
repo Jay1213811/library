@@ -26,6 +26,17 @@ contract BankMangement{
        user_dic[_usersecretkey]=user_info(_username,_bankcardnumber,msg.sender,0,_phonenumber,_Education_information,_Work_information,block.timestamp);
         return _usersecretkey;
     }
+    //用户登陆函数，传入密钥及用户名去做匹配。如果要更高的安全性可以设置require(user_dic[_usersecretkey].user_address==address(msg.sender));将当前登陆用户地址与注册地址做匹配
+    //这里为了方便后面
+    function login(string memory _username,bytes32 _usersecretkey) public view returns(string){
+        if(keccak256(abi.encode(_username)) == keccak256(abi.encode(user_dic[_usersecretkey].username))){
+            return("success");
+        }
+        else
+        {
+            revert("user error");
+        }
+    }
     //我们这里对系统操作权限设立一个数据字典 。默认银行应该有的权限为[0,2,3,4] 
     //查看用户名字-----0
     //查看教育信息，工作信息-----1
